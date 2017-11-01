@@ -1069,6 +1069,8 @@ function sendpm($recipients, $subject, $message, $store_outbox = false, $from = 
 	if (empty($all_to))
 		return $log;
 
+	$htmlmessage = encrypt_message($htmlmessage);
+
 	// Insert the message itself and then grab the last insert id.
 	$id_pm = $smcFunc['db_insert']('',
 		'{db_prefix}personal_messages',
@@ -2968,6 +2970,39 @@ function spell_suggest($dict, $word)
 	{
 		return pspell_suggest($dict, $word);
 	}
+}
+
+function encrypt_message($message)
+{
+	global $encryption_key;
+	$method = 'aes-256-ctr';
+	$nonce_size = openssl_cipher_iv_length($method);
+	$nonce = openssl_random_pseudo_bytes($nonce_size);
+	$text = openssl_encrypt(
+		$message,
+		$method,
+		$encryption_key,
+		OPENSSL_RAW_DATA,
+		$nonce
+	);
+	return base64_encode($nonce.$text);
+}
+
+function decrypt_message($message)
+{
+	global $encryption_key;
+	$method = 'aes-256-ctr';
+	$raw_message = base64_decode($message, true);
+	$nonceSize = openssl_cipher_iv_length($method);
+	$nonce = mb_substr($raw_message, 0, $nonceSize, '8bit');
+	$cipher_text = mb_substr($raw_message, $nonceSize, null, '8bit');
+	return openssl_decrypt(
+		$cipher_text,
+		$method,
+		$encryption_key,
+		OPENSSL_RAW_DATA,
+		$nonce
+	);
 }
 
 ?>

@@ -61,6 +61,11 @@ $webmaster_email = 'noreply@myserver.com';
  * @var string
  */
 $cookiename = 'SMFCookie11';
+/**
+ * Key used for encrypting PMs.
+ * @var $encryption_key
+ */
+$encryption_key = '';
 
 ########## Database Info ##########
 /**
